@@ -1,0 +1,32 @@
+from pydub import AudioSegment
+import speech_recognition as sr
+
+# Load the audio file
+audio_file_path = "C:\Users\scrip\OneDrive\scriptjetprime.works\Voice 002.m4a"
+audio = AudioSegment.from_file(audio_file_path, format="m4a")
+
+# Initialize the recognizer
+recognizer = sr.Recognizer()
+
+# Transcribe the audio
+transcription = ""
+for i in range(0, len(audio), 30000):  # Process 10-second chunks
+    audio_chunk = audio[i:i + 30000]
+    audio_chunk.export("/mnt/data/temp_chunk.wav", format="wav")
+    with sr.AudioFile("/mnt/data/temp_chunk.wav") as source:
+        audio_data = recognizer.record(source)
+        try:
+            text = recognizer.recognize_google(audio_data)
+            transcription += text + " "
+        except sr.UnknownValueError:
+            transcription += "(Unintelligible) "
+        except sr.RequestError as e:
+            transcription = f"Could not request results; {e}"
+            break
+
+# Save the transcription to a text file
+transcription_file_path = "/transcriptions/welcomeToScriptjetPrimeScript(0).txt"
+with open(transcription_file_path, "w") as f:
+    f.write(transcription)
+
+transcription_file_path, transcription[:500]  # Show the path and a snippet of the transcription
